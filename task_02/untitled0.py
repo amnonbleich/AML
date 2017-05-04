@@ -41,12 +41,12 @@ def reduce(Proteom_dict,UniParc_Dict):
 ## Top Down Version
 
 '''Better Version of it '''
-def maxsize(dictionary):
+def maxsize(dictionary,covered):
     
     maxi=-1
     keys=''
     for key, value in dictionary.items():
-        l=len(value)
+        l=len(value.difference(covered))
         if (l>maxi):
             maxi=l
             keys=key
@@ -57,7 +57,7 @@ def reduce_max(Proteom_dict,UniParc_Dict):
     required=list()
     covered_UniPark=set()
     while(len(Proteom_dict)):
-        p=maxsize(Proteom_dict)
+        p=maxsize(Proteom_dict,covered_UniPark)
         unique=Proteom_dict[p].difference(covered_UniPark)
         if(len(unique)):
             required.append((p,unique))
