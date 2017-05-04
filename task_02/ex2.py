@@ -79,9 +79,12 @@ def reduce_max(Proteom_dict,UniParc_Dict):
 zz=reduce_max(proteome_dict.copy(),uniPrac_dict.copy())
 
 def proteome2uniprot(proteomeList,uniProt_dict):
+    ret=list()
     for elem in proteomeList:
         uprotset=set()
         for upark in elem[1]:
             uprotset.update(uniProt_dict[upark])
-        elem[1]=list(uprotset)
+        ret.append((elem[0],list(uprotset)))
+    #ret.sort(key=lambda tup: len(tup[1]))
+    return(ret)
             
