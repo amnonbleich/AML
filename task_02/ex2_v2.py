@@ -8,7 +8,7 @@ proteome2uniParc_dict = {}
 
 uniProt2Proteome_dict={}
 Proteom2uniProt_dict={}
-
+uniParcwoProteome=list()
 
 
 with open(FILE_PATH) as f:
@@ -52,6 +52,7 @@ with open(FILE_PATH) as f:
     
     
 '''Create uniProt2Proteome and Proteom2uniProt'''
+'''Create a metadict'''
 
 for proteom in proteome2uniParc_dict:
     uprotset=set()
@@ -62,12 +63,15 @@ for proteom in proteome2uniParc_dict:
 for uprot in uniProt2uniParc_dict:
     proteomset=set()
     for upark in uniProt2uniParc_dict[uprot]:
-        proteomset.update(uniPrac2Proteome_dict[upark])
+        if upark in uniPrac2Proteome_dict:
+            proteomset.update(uniPrac2Proteome_dict[upark])
+        else:
+            uniParcwoProteome.append(upark)
           
     uniProt2Proteome_dict[uprot]=proteomset
 
 
-    
+print('merge')
     
 #
 ## sort proteomes by number of uniPrac in proteome
@@ -94,7 +98,11 @@ def maxsize(dictionary,covered):
 def reduce_max(Proteom_dict,UniParc_Dict):
     required=list()
     covered_UniPark=set()
+    size=len(Proteom_dict)
+
     while(len(Proteom_dict)):
+        if(len(Proteom_dict)%50==0):
+            print(len(Proteom_dict))
         p=maxsize(Proteom_dict,covered_UniPark)
         unique=Proteom_dict[p].difference(covered_UniPark)
         if(len(unique)):
@@ -102,7 +110,7 @@ def reduce_max(Proteom_dict,UniParc_Dict):
             required.append((p,unique))
             
         Proteom_dict.pop(p)
-    print("%i proteoms given, reduced to %i, %.2f%% of input"%(len(Proteome_dict),len(required),(len(required)*100/len(Proteome_dict))))
+    print("%i proteoms given, reduced to %i, %.2f%% of input"%(size,len(required),(len(required)*100/size)))
     return(required)
 
 zz=reduce_max(Proteom2uniProt_dict.copy(),uniProt2Proteome_dict.copy())
