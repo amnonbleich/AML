@@ -1,3 +1,4 @@
+import json
 FILE_PATH = './all_uniparc_mapped_to_uniprot_and_proteomes.tdl'
 
 # dictionary UniPrac:uniProt
@@ -27,13 +28,12 @@ with open(FILE_PATH) as f:
                 if prot in proteome_dict:
                     proteome_dict[prot].update(set([line[0]]))
                 else:
-                    proteome_dict[prot] = set([line[0]])
- 
+                    proteome_dict[prot] = set([line[0]]) 
     f.close()
 
 
 ## Top Down Version
-
+## get the Proteom with the most included UniParc ID's
 def maxsize(dictionary,covered):
     
     maxi = -1
@@ -44,14 +44,16 @@ def maxsize(dictionary,covered):
             maxi = l
             keys = key
     return(keys)            
-                         
+ 
+
+## creates a list of Tuples (Proteom, [uniParc IDs])                        
 def reduce_max(local_proteome_dict):
     required = list()
     covered_uniPrac = set()
     while(len(local_proteome_dict)):
         p = maxsize(local_proteome_dict,covered_uniPrac)
         unique = local_proteome_dict[p].difference(covered_uniPrac)
-        if(len(unique)):
+        if(len(unique)):    # if there is new information
             covered_uniPrac.update(unique)
             required.append((p,unique))
             
@@ -59,8 +61,11 @@ def reduce_max(local_proteome_dict):
     print("%i proteomes given, reduced to %i, %.2f%% of input"%(len(proteome_dict),len(required),(len(required)*100/len(proteome_dict))))
     return(required)
 
-zz=reduce_max(proteome_dict.copy())
 
+
+zz=reduce_max(proteome_dict.copy()) 
+
+## Rp
 def proteome2uniprot(proteomeList,uniPrac_dict):
     ret = list()
     for elem in proteomeList:
@@ -73,3 +78,12 @@ def proteome2uniprot(proteomeList,uniPrac_dict):
     return(ret)
 
 proteome_sorted_list = proteome2uniprot(zz, uniPrac_dict)
+
+with open('./data.js', 'w') as outfile:
+    json.dump(proteome_sorted_list, outfile)
+
+#a=[len(x[1]) for x in proteome_sorted_list]    
+#plt.figure(num=None, figsize=(15, 10), dpi=80, facecolor='w', edgecolor='k')
+#plt.plot(a)
+#plt.ylabel('Number of UniProt ID\'s')
+#plt.savefig('foo.png')
