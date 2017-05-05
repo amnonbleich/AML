@@ -1,3 +1,5 @@
+# Machine Learning Assignment 2 - Lee Hong, Amnon Bleich, Ben Wulf
+
 import json
 FILE_PATH = './all_uniparc_mapped_to_uniprot_and_proteomes.tdl'
 
@@ -54,10 +56,10 @@ def reduce_max(local_proteome_dict):
         p = maxsize(local_proteome_dict,covered_uniPrac)
         unique = local_proteome_dict[p].difference(covered_uniPrac)
         if(len(unique)):    # if there is new information
-            covered_uniPrac.update(unique)
-            required.append((p,unique))
+            covered_uniPrac.update(unique) # add this info to covered uniparc
+            required.append((p,unique))     # and add the proteom  to the list of required proteomes
             
-        local_proteome_dict.pop(p)
+        local_proteome_dict.pop(p)      # remove the proteome from the initial set
     print("%i proteomes given, reduced to %i, %.2f%% of input"%(len(proteome_dict),len(required),(len(required)*100/len(proteome_dict))))
     return(required)
 
@@ -65,20 +67,22 @@ def reduce_max(local_proteome_dict):
 
 zz=reduce_max(proteome_dict.copy()) 
 
-## Rp
+## Remap UniParc identifier to UniProt and Replace them
 def proteome2uniprot(proteomeList,uniPrac_dict):
     ret = list()
-    for elem in proteomeList:
-        uProt_set = set()
-        for uPrac in elem[1]:
+    for elem in proteomeList:       # for each proteom
+        uProt_set = set()               # create a new set
+        for uPrac in elem[1]:               # translate uniparc to uniprot
             uProt_set.update(uniPrac_dict[uPrac])
-        ret.append((elem[0],list(uProt_set)))
+        ret.append((elem[0],list(uProt_set)))## Create a new list with UniProt IDs instead of unipark
     # sort proteomes by number of uniProt associated
-    ret = sorted(ret , key=lambda x: len(x[1]), reverse=True)
+    ret = sorted(ret , key=lambda x: len(x[1]), reverse=True) # Resort, could be that the number of included UniProt changes the relation
     return(ret)
 
 proteome_sorted_list = proteome2uniprot(zz, uniPrac_dict)
 
+
+# Write solution file
 with open('./data.js', 'w') as outfile:
     json.dump(proteome_sorted_list, outfile)
 
@@ -87,3 +91,20 @@ with open('./data.js', 'w') as outfile:
 #plt.plot(a)
 #plt.ylabel('Number of UniProt ID\'s')
 #plt.savefig('foo.png')
+
+
+
+#Sainity check
+alle=list()
+b=set()
+for a in proteome_sorted_list:
+    alle +=a[1]
+    b.update(set(a[1]))
+    
+    
+print(len(alle))#54326
+print(len(b))#54326 -> they are unique
+
+## 54326 unique uniprot in our mapping but 54712 in original 386 not mapped. What happend?
+## It seems that there are 386 UniProt which have no reference to a Proteom
+## Maybe we can create a list with them. but we think it wasn't asked
