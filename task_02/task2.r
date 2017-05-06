@@ -1,4 +1,4 @@
-data2<- read.csv("C:/Users/benwulf/Downloads/all_uniparc_mapped_to_uniprot_and_proteomes.tdl",sep="\t")
+data2<- read.csv("C:/Users/Ben/Documents/Uni/Master/aml/AML/task_02/all_uniparc_mapped_to_uniprot_and_proteomes.tdl",sep="\t")
 
 # check for full rows
 concated_data<- paste0(data2$UniParc,data2$UniProt,data2$Proteomes)

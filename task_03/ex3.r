@@ -49,18 +49,23 @@ pc1<- pca$rotation[order(abs(pca$rotation[,1]),decreasing = T)[1:5],1]
 pc2<- pca$rotation[order(abs(pca$rotation[,1]),decreasing = T)[1:5],2]
 
 # Task 1.4
-color_key<-function(patient)
+
+
+rename<-function(elem)
 {
+  return(paste0(strsplit(elem,'\\.')[[1]][1:3], collapse = '-'))
+}
 
-  return(ifelse(labels[which(labels[,1]==patient)[1],2],"blue","red"))}
+newnames<- data.frame(matrixLabels=colnames(microarray_matrix_filtered),annotationname=sapply(colnames(microarray_matrix_filtered),rename))
+merged <-merge(newnames,labels,by.x = 'annotationname',by.y = 'patient')
+#sort merged
+merged<- merged[order(merged$matrixLabels),]
 
-lables2<-list(labels$cancer)
-names(labels2)<-labels$patient
 
-paste0(strsplit("TCGA.AG.4015.01A.01R.1119.07",'\\.')[[1]][1:3], collapse = '-')
-
-pca_plot<- function (comp1, comp2)
+pca_plot<- function (comp)
   {
-  plot(pca[comp2],pca[comp2],col=lapply(colnames(microarray_matrix_filtered),color_key))
+  plot(pca$x[,comp],col=ifelse(merged$cancer[order(colnames(microarray_matrix_filtered))]=='Colon','red','blue'))
   
-  }
+}
+
+pca_plot(c(1,2))
