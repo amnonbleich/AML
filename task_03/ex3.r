@@ -57,14 +57,14 @@ rename<-function(elem)
 }
 
 newnames<- data.frame(matrixLabels=colnames(microarray_matrix_filtered),annotationname=sapply(colnames(microarray_matrix_filtered),rename))
-merged <-merge(newnames,labels,by.x = 'annotationname',by.y = 'patient')
+merged <-merge(newnames,clinical_data,by.x = 'annotationname',by.y = 'patient')
 #sort merged
 merged<- merged[order(merged$matrixLabels),]
 
 
 pca_plot<- function (comp)
   {
-  plot(pca$x[,comp],col=ifelse(merged$cancer[order(colnames(microarray_matrix_filtered))]=='Colon','red','blue'))
+  plot(pca$x[,comp],col=ifelse(merged$gender[order(colnames(microarray_matrix_filtered))]=='MALE','red','blue'))
   
 }
 
