@@ -1,4 +1,4 @@
-setwd('C:/Users/Ben/Documents/Uni/Master/aml/AML/task_03/')
+setwd('/home/amnonbleich/Workspace/Machine_Learning/AML/task_03/')
 
 source('./pca-utils.r')
 source('./pls-varimp.r')
@@ -76,3 +76,26 @@ splom_pca(pca, col=colors)
 ####
 
 
+# Task 2.2
+
+cor_mat<-cor(microarray_matrix, use="complete.obs")
+
+
+# Task 2.3
+#Randomly shuffle the data
+shuffled_microarray<-microarray_matrix[sample(nrow(microarray_matrix)),]
+
+#Create 10 equally size folds
+folds <- cut(seq(1,nrow(yourData)),breaks=10,labels=FALSE)
+
+#Perform 10 fold cross validation
+for(i in 1:10){
+  testIndexes <- which(folds==i,arr.ind=TRUE)
+  testData <- shuffled_microarray[testIndexes, ]
+  trainData <- shuffled_microarray[-testIndexes, ]
+  
+  #TODO pls thing with the test and train data
+}
+
+
+# TODO Tasks 2.4 compare lasso and pca with cross validation (I cant install any of those packages for some reason :>/
