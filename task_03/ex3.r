@@ -1,5 +1,7 @@
 setwd('C:/Users/Ben/Documents/Uni/Master/aml/AML/task_03/')
 
+source('./pca-utils.r')
+source('./pls-varimp.r')
 microarry_data <- read.csv('./data/crc_220_microarray.txt', sep='\t')
 labels <- read.csv('./data/crc_patients_all.txt', sep='\t')
 clinical_data <- read.csv('./data/crc_clinical_sheet.txt', sep='\t')
@@ -40,16 +42,19 @@ microarray_matrix_filtered<-microarray_matrix[(num_na<1),]
 
 pca <- prcomp(t(microarray_matrix_filtered),center=T,scale=T)
 
+screeplot_percent(pca)
 
 # TO dOOOOO!
 
 # Task 1.3
 
+
+# get loadings from pc 1 und pc 2
+# order the loadings by max positive or negative influence on the components
 pc1<- pca$rotation[order(abs(pca$rotation[,1]),decreasing = T)[1:5],1]
 pc2<- pca$rotation[order(abs(pca$rotation[,1]),decreasing = T)[1:5],2]
 
 # Task 1.4
-
 
 rename<-function(elem)
 {
@@ -60,12 +65,14 @@ newnames<- data.frame(matrixLabels=colnames(microarray_matrix_filtered),annotati
 merged <-merge(newnames,clinical_data,by.x = 'annotationname',by.y = 'patient')
 #sort merged
 merged<- merged[order(merged$matrixLabels),]
+colors<- ifelse(merged$cancer[order(rownames(pca$x))]=="Colon",'red','blue')
 
 
-pca_plot<- function (comp)
-  {
-  plot(pca$x[,comp],col=ifelse(merged$gender[order(colnames(microarray_matrix_filtered))]=='MALE','red','blue'))
-  
-}
+splom_pca(pca, col=colors)
 
-pca_plot(c(1,2))
+
+####
+#Some test
+####
+
+
