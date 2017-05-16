@@ -1,6 +1,5 @@
 setwd('~/Workspace/Machine_Learning/AML/task_04/')
 
-library(mi) #TODO realize how to use this function to impute NAs
 library(ROCR)
 library(e1071)
 
@@ -12,36 +11,41 @@ sum_na <- function (to_sum)
   return(sum(is.na(to_sum)))
 }
 
-# create a vector with the number of NAs for each feature (row)
-#num_na = sum(is.na(row)
-num_na_feature<- apply(clinical_data,2,sum_na)
-num_na_patient<- apply(clinical_data,1,sum_na)
-
-#Remove features with 30% or more N/A and patients with at least one N/A
-clinical_data_filtered<-clinical_data[,(num_na_feature<nrow(clinical_data)*0.3)]
-
+clinical_data_filtered<-clinical_data
 #Remove unneccessary columns:
 clinical_data_filtered$patient<-NULL
+# clinical_data_filtered$days_to_last_followup<-NULL
+clinical_data_filtered$lymphnodes_examined<-NULL
+# clinical_data_filtered$number_of_lymphnodes_examined<-NULL
+
+
+#Remove features with 30% or more N/A and patients with at least one N/A
+num_na_feature<- apply(clinical_data_filtered,2,sum_na)
+clinical_data_filtered<-clinical_data_filtered[,(num_na_feature<nrow(clinical_data)*0.3)]
+num_na_patient<- apply(clinical_data_filtered,1,sum_na)
+clinical_data_filtered<-clinical_data_filtered[num_na_patient==0,]
 
 # varify all categorial are "factor"
 d<-(lapply(clinical_data_filtered,class) == "factor" | lapply(clinical_data_filtered,class) == "numeric" | lapply(clinical_data_filtered,class) == "integer")
 all(d)
-
-# TODO remove irrelevant features
-
-smp_size <- floor(0.75 * nrow(clinical_data_filtered))
-set.seed(123)
-training_idxs = sample(seq_len(nrow(clinical_data_filtered)), size = smp_size)
-training_data = clinical_data_filtered[training_idxs,]
-test_data = clinical_data_filtered[-training_idxs, ]
-
-# TODO make it work, tune cost and gamma
-svm_model <- svm(Type ~ ., data = training_data, cost = 100, gamma = 1)
-svm_pred <- predict(svm_model, test_data[,-10])
+# TRUE
 
 
 
-
+# TODO tune cost and gamma
+success_rate=0
+for (i in (1:100))
+{
+  smp_size <- floor(0.75 * nrow(clinical_data_filtered))
+  training_idxs = sample(nrow(clinical_data_filtered), size = smp_size)
+  training_data = clinical_data_filtered[training_idxs,]
+  test_data = clinical_data_filtered[-training_idxs, ]
+  svm_model <- svm(vascular_invasion_present ~ ., data = training_data)
+  svm_pred <- predict(svm_model, test_data)
+  correct = test_data$vascular_invasion_present
+  success_rate=success_rate+sum(correct == svm_pred)/nrow(test_data)
+}
+success_rate=success_rate/100
 
 
 
