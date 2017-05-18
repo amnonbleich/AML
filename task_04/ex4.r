@@ -14,9 +14,8 @@ sum_na <- function (to_sum)
 clinical_data_filtered<-clinical_data
 #Remove unneccessary columns:
 clinical_data_filtered$patient<-NULL
-# clinical_data_filtered$days_to_last_followup<-NULL
 clinical_data_filtered$lymphnodes_examined<-NULL
-# clinical_data_filtered$number_of_lymphnodes_examined<-NULL
+clinical_data_filtered$vital_status<-NULL
 
 
 #Remove features with 30% or more N/A and patients with at least one N/A
@@ -31,83 +30,56 @@ all(d)
 # TRUE
 
 
-
 # TODO tune cost and gamma
-success_rate=0
-for (i in (1:100))
-{
-  smp_size <- floor(0.75 * nrow(clinical_data_filtered))
-  training_idxs = sample(nrow(clinical_data_filtered), size = smp_size)
-  training_data = clinical_data_filtered[training_idxs,]
-  test_data = clinical_data_filtered[-training_idxs, ]
-  svm_model <- svm(vascular_invasion_present ~ ., data = training_data)
-  svm_pred <- predict(svm_model, test_data)
-  correct = test_data$vascular_invasion_present
-  success_rate=success_rate+sum(correct == svm_pred)/nrow(test_data)
-}
-success_rate=success_rate/100
+# success_rate=0
+# for (i in (1:500))
+# {
+#   smp_size <- floor(0.75 * nrow(clinical_data_filtered))
+#   training_idxs = sample(nrow(clinical_data_filtered), size = smp_size)
+#   training_data = clinical_data_filtered[training_idxs,]
+#   test_data = clinical_data_filtered[-training_idxs, ]
+#   svm_model <- svm(vascular_invasion_present ~ ., data = training_data)
+#   svm_pred <- predict(svm_model, test_data)
+#   correct = test_data$vascular_invasion_present
+#   success_rate=success_rate+sum(correct == svm_pred)/nrow(test_data)
+# }
+# success_rate=success_rate/i
 
+#svm_model <- svm(vascular_invasion_present ~ ., data = training_data)
+smp_size <- floor(0.75 * nrow(clinical_data_filtered))
+training_idxs = sample(nrow(clinical_data_filtered), size = smp_size)
+training_data = clinical_data_filtered[training_idxs,]
+test_data = clinical_data_filtered[-training_idxs,]
 
+# tune using 10-fild cv, find bets gamma/cost
+set.seed(1)
+tuned = tune.svm(vascular_invasion_present~., data = training_data, gamma = seq(0.005, 0.05, 0.005), cost = 10^(-3:3), tunecontrol=tune.control(cross=10),    kernel = "linear")
+# best = best.svm(vascular_invasion_present~., data = training_data, gamma = seq(0.005, 0.05, 0.005), cost = 10^(0:3), tunecontrol=tune.control(cross=10),    kernel = "linear")
 
-# Useless
+summary(tuned)
+plot(tuned)
 
-# clinical_data_filtered$cancer <- as.numeric(clinical_data_filtered$cancer=="Colon")
+# - sampling method: 10-fold cross validation 
 # 
-# tmp_model <- model.matrix(~as.numeric(anatomic_organ_subdivision), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$anatomic_organ_subdivision <- tmp_model[,2]
+# - best parameters:
+#   gamma cost
+# 0.005   1
 # 
-# tmp_model <- model.matrix(~as.numeric(tumor_site), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$tumor_site <- tmp_model[,2]
-# 
-# tmp_model <- model.matrix(~as.numeric(distant_metastasis_pathologic_spread), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$distant_metastasis_pathologic_spread <- tmp_model[,2]
-# 
-# clinical_data_filtered$gender <- as.numeric(clinical_data_filtered$gender=="MALE")
-# 
-# #clinical_data_filtered$histological_type <- as.numeric(clinical_data_filtered$histological_type)
-# 
-# tmp_model <- model.matrix(~as.numeric(histological_type), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$histological_type <- tmp_model[,2]
-# 
-# tmp_model <- model.matrix(~as.numeric(history_of_colon_polyps), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$history_of_colon_polyps <- tmp_model[,2]
-# 
-# clinical_data_filtered$icd_o_3_histology <- as.numeric(clinical_data_filtered$icd_o_3_histology=="8140/3")
-# 
-# tmp_model <- model.matrix(~as.numeric(icd_o_3_site), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$icd_o_3_site <- tmp_model[,2]
-# 
-# clinical_data_filtered$lymphatic_invasion_present <- as.numeric(clinical_data_filtered$lymphatic_invasion_present=="YES")
-# 
-# tmp_model <- model.matrix(~as.numeric(lymphnode_pathologic_spread), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$lymphnode_pathologic_spread <- tmp_model[,2]
-# 
-# clinical_data_filtered$lymphnodes_examined <- as.numeric(clinical_data_filtered$lymphnodes_examined=="YES")
-# clinical_data_filtered$person_neoplasm_cancer_status <- as.numeric(clinical_data_filtered$person_neoplasm_cancer_status=="WITH TUMOR")
-# 
-# tmp_model <- model.matrix(~as.numeric(primary_tumor_pathologic_spread), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$primary_tumor_pathologic_spread <- tmp_model[,2]
-# 
-# clinical_data_filtered$prior_diagnosis <- as.numeric(clinical_data_filtered$prior_diagnosis=="YES")
-# 
-# tmp_model <- model.matrix(~as.numeric(residual_tumor), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$residual_tumor <- tmp_model[,2]
-# 
-# clinical_data_filtered$synchronous_colon_cancer_present <- as.numeric(clinical_data_filtered$synchronous_colon_cancer_present=="YES")
-# 
-# tmp_model <- model.matrix(~as.numeric(tumor_stage), clinical_data_filtered)
-# tmp_model <- tmp_model[match(rownames(clinical_data_filtered), rownames(tmp_model)),] #fill in corresponding NA's
-# clinical_data_filtered$tumor_stage <- tmp_model[,2]
-# 
-# 
-# clinical_data_filtered$vascular_invasion_present <- as.numeric(clinical_data_filtered$vascular_invasion_present=="YES")
+# - best performance: 0.1686813 error rate
 
+# Parameter tuning of ‘svm’- radial kernel:
+#   
+#   - sampling method: 10-fold cross validation 
+# 
+# - best parameters:
+#   gamma cost
+# 0.005  100
+# 
+# - best performance: 0.182967 error rate
+# 
+
+svm_model <- svm(vascular_invasion_present ~ ., data = training_data, cost=tuned$best.parameters$cost ,gamma=tuned$best.parameters$gamma, kernel="linear")
+# remove vascular invation columns for prediction
+svm_pred <- predict(svm_model, test_data[,-ncol(test_data)])
+correct = test_data$vascular_invasion_present
+success_rate=sum(correct == svm_pred)/nrow(test_data)
