@@ -66,7 +66,26 @@ plot(tuned)
 # test performence 
 svm_model <- svm(vascular_invasion_present ~ ., data = training_data, cost=tuned$best.parameters$cost ,gamma=tuned$best.parameters$gamma, kernel="linear")
 # remove vascular invation columns for prediction
-svm_pred <- predict(svm_model, test_data[,-ncol(test_data)])
+svm_pred <- predict(svm_model, test_data, type="response")
+
+
+# ROC-curve
+svm_prediction_obj <- prediction(svm_pred, test_data$vascular_invasion_present) # did not work for some reason
+
+
+# ROC Curves
+roc.perf = performance(svm_prediction_obj, measure = "tpr", x.measure = "fpr")
+plot(roc.perf)
+abline(a=0, b= 1)
+
+#precision call
+roc.perf = performance(svm_prediction_obj, measure = "prec", x.measure = "rec")
+plot(roc.perf)
+abline(a=0, b= 1)
+
+
+
+
 correct = test_data$vascular_invasion_present
 success_rate=sum(correct == svm_pred)/nrow(test_data)
 
