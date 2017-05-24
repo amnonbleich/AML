@@ -160,8 +160,8 @@ for (k in ks)
     cat(paste(k,'-',cost,'\n'))
     specK <- spectrumKernel(k=k)
     model <- kbsvm(
-      x=dataset_wo_flanks$seq,
-      y=dataset_wo_flanks$lables,
+      x=dataset_flanks$seq,
+      y=dataset_flanks$lables,
       kernel=specK,
       pkg="e1071",
       svm="C-svc",
