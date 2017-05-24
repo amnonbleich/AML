@@ -62,10 +62,24 @@ dataset_flanks<-  data.frame( lables=as.factor(c(rep(T,length(PUM2pos_striped)),
 dataset_flanks$seq<- DNAStringSet(c(PUM2pos_all,PUM2neg_all))
 
 
+####################
+#     Task 2       #
+####################
+specK <- spectrumKernel(k=3)
+
+model_init <- kbsvm(
+  x=dataset_wo_flanks$seq[-(10000:11692)],
+  y=dataset_wo_flanks$lables[-(10000:11692)],
+  kernel=specK,
+  pkg="e1071",
+  svm="C-svc")
+
+pred<- predict(model_init,dataset_wo_flanks$seq[(10000:11692)])
+
 
 
 ####################
-#     Task 2 /3    #
+#     Task 3       #
 ####################
 
 #stringkernel <- stringdot(type="spectrum", length=2, normalized=TRUE)
@@ -200,8 +214,14 @@ legend("bottomright",legend=1:5,col=rainbow(5),pch='l')
 
 
 
+####################
+#     Task 5       #
+####################
 
 
+## not really what was asked... see lecture slide 26
+
+model@featureWeights
 
 
 
