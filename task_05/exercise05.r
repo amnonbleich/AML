@@ -117,8 +117,8 @@ auc_min<-3  # just for axis limits for the plot
 auc_max<-0  # just for axis limits for the plot
 
 
-ks<-c(1,2,3,4,5)  # the different kmer sizes we tried out
-costs<-c(0.5,0.75,1,2,4,8,10) # the different costs we use
+ks<-c(3,4,5)  # the different kmer sizes we tried out
+costs<-c(0.5,0.75,1,2,6) # the different costs we use
 
 for (k in ks) # for each kmer size
 {
@@ -138,7 +138,7 @@ for (k in ks) # for each kmer size
     perfParameters=c('ACC','AUC'),
     cross=10,
     showProgress=T,
-    cost=cost)
+    C=cost)
     accC<-c(accC,model@cvResult@ACC)  # save the accuracy value from 10-fold cv
     aucC<-c(aucC,model@cvResult@AUC)  # save the area under the curve value from 10-fold cv
   }
@@ -184,13 +184,13 @@ aucf_min<-3
 aucf_max<-0
 
 
-ks<-c(1,2,3,4,5)
-costs<-c(0.5,0.75,1,2,4,8,10)
+ks<-c(3,4,5)
+costs<-c(0.5,0.75,1,2,6)
 
 for (k in ks)
 {
-  accC<-c()
-  aucC<-c()
+  accC<-c()# save the accuracy value from 10-fold cv
+  aucC<-c()# save the area under the curve value from 10-fold cv
   
   for (cost in costs)
   {
@@ -205,7 +205,7 @@ for (k in ks)
       perfParameters=c('ACC','AUC'),
       cross=10,
       showProgress=T,
-      cost=cost)
+      C=cost)
     accC<-c(accC,model@cvResult@ACC)
     aucC<-c(aucC,model@cvResult@AUC)
   }
@@ -220,7 +220,7 @@ for (k in ks)
   
 }
 
-## Plot the AUC
+## Plot the AUC for bindingsite with flanks
 plot(costs,aucf[[1]],col=rainbow(5)[1],ylim=c(aucf_min,aucf_max),type='l',xlim=c(0,10),ylab='AUC- Area under the curve', main="AUC's in dependence of costs and kmer size - with flanks")
 
 for(i in 2:5)
@@ -228,7 +228,7 @@ for(i in 2:5)
 legend("bottomright",legend=1:5,col=rainbow(5),pch='l')
 
 
-## Plot the Accuracy
+## Plot the Accuracy for bindingsite with flanks
 plot(costs,accf[[1]],col=rainbow(5)[1],ylim=c(accf_min,accf_max),type='l',xlim=c(0,10),ylab='Accuracy', main="Accuracy in dependence of costs and kmer size - with flanks")
 for(i in 2:5)
 {lines(costs,accf[[i]],col=rainbow(5)[i])}
