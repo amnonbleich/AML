@@ -90,7 +90,7 @@ basic_model <- kbsvm(
   svm="C-svc")
 
 # predict the rest of the datapoints with the trained svm
-pred<- predict(model_init,dataset_wo_flanks$seq[(10000:11692)])
+pred<- predict(basic_model,dataset_wo_flanks$seq[(10000:11692)])
 
 
 
@@ -156,18 +156,18 @@ for (k in ks) # for each kmer size
 }
 
 ## Plot the AUC
-plot(costs,auc[[1]],col=rainbow(5)[1],ylim=c(auc_min,auc_max),type='l',xlim=c(0,10),ylab='AUC- Area under the curve', main="AUC's in dependence of costs and kmer size - wo flanks")
+plot(costs,auc[[3]],col=rainbow(5)[1],ylim=c(auc_min,auc_max),type='l',xlim=c(0,6),ylab='AUC- Area under the curve', main="AUC's in dependence of costs and kmer size - wo flanks")
 
-for(i in 2:5)
+for(i in 4:5)
 {lines(costs,auc[[i]],col=rainbow(5)[i])}
-legend("bottomright",legend=1:5,col=rainbow(5),pch='l')
+legend("bottomright",legend=paste('k=',3:5),col=rainbow(5)[c(1,4,5)],pch='l')
 
 
 ## Plot the Accuracy
-plot(costs,acc[[1]],col=rainbow(5)[1],ylim=c(acc_min,acc_max),type='l',xlim=c(0,10),ylab='Accuracy', main="Accuracy in dependence of costs and kmer size - wo flanks")
-for(i in 2:5)
+plot(costs,acc[[3]],col=rainbow(5)[1],ylim=c(acc_min,acc_max),type='l',xlim=c(0,6),ylab='Accuracy', main="Accuracy in dependence of costs and kmer size - wo flanks")
+for(i in 4:5)
 {lines(costs,acc[[i]],col=rainbow(5)[i])}
-legend("bottomright",legend=1:5,col=rainbow(5),pch='l')
+legend("bottomright",legend=paste('k=',3:5),col=rainbow(5)[c(1,4,5)],pch='l')
 
 
 ####################
@@ -184,8 +184,8 @@ aucf_min<-3
 aucf_max<-0
 
 
-ks<-c(3,4,5)
-costs<-c(0.5,0.75,1,2,6)
+ks<-c(3)
+costs<-c(0.5,0.75,1,2)
 
 for (k in ks)
 {
@@ -221,30 +221,23 @@ for (k in ks)
 }
 
 ## Plot the AUC for bindingsite with flanks
-plot(costs,aucf[[1]],col=rainbow(5)[1],ylim=c(aucf_min,aucf_max),type='l',xlim=c(0,10),ylab='AUC- Area under the curve', main="AUC's in dependence of costs and kmer size - with flanks")
-
-for(i in 2:5)
-{lines(costs,aucf[[i]],col=rainbow(5)[i])}
-legend("bottomright",legend=1:5,col=rainbow(5),pch='l')
+plot(costs,aucf[[3]],col=rainbow(5)[1],ylim=c(aucf_min,aucf_max),type='l',xlim=c(0,2),ylab='AUC- Area under the curve', main="AUC's in dependence of costs and kmer size - with flanks")
 
 
 ## Plot the Accuracy for bindingsite with flanks
-plot(costs,accf[[1]],col=rainbow(5)[1],ylim=c(accf_min,accf_max),type='l',xlim=c(0,10),ylab='Accuracy', main="Accuracy in dependence of costs and kmer size - with flanks")
-for(i in 2:5)
-{lines(costs,accf[[i]],col=rainbow(5)[i])}
-legend("bottomright",legend=1:5,col=rainbow(5),pch='l')
-
-
-
+plot(costs,accf[[3]],col=rainbow(5)[1],ylim=c(accf_min,accf_max),type='l',xlim=c(0,2),ylab='Accuracy', main="Accuracy in dependence of costs and kmer size - with flanks")
 
 ####################
 #     Task 5       #
 ####################
 
 
-## not really what was asked... see lecture slide 26
 
-model@featureWeights
+s<-order(abs(basic_model@featureWeights),decreasing=T)
+
+vipkmer<- basic_model@featureWeights[s]
+names(vipkmer)<-colnames(basic_model@featureWeights)[s]
+print(vipkmer)
 
 
 
