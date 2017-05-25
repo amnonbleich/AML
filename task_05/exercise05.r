@@ -5,7 +5,7 @@
 
 
 #install.packages("seqinr")
-setwd("./Uni/Master/aml/AML/task_05/")
+setwd("~/Workspace/uni/Machine_Learning/AML/task_05/")
 library(seqinr)# for loading fasta
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("kebabs")
@@ -245,10 +245,3 @@ legend("bottomright",legend=1:5,col=rainbow(5),pch='l')
 ## not really what was asked... see lecture slide 26
 
 model@featureWeights
-
-
-
-
-
-
-
