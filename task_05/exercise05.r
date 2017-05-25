@@ -1,63 +1,71 @@
-#install.packages("kernlab")
+#####################################
+# Exercise 5 - AML - 26.05.17       #
+# Ben Wulf, Amnon Bleich, Lie Hong  #
+#####################################
+
+
 #install.packages("seqinr")
 setwd("./Uni/Master/aml/AML/task_05/")
 library(seqinr)# for loading fasta
-#library(kernlab)
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("kebabs")
 library(kebabs)
 library(e1071)
-#library(ROCR)
-#library(caret)
 
+
+####################
+#     Task 1       #
+####################
+
+
+# We decided to use the  PUM2 dataset and the kebabs package. kernlab crashes caused by allocation errors
+
+
+###
+# This function removes all lower capitals from a given string in a list
+###
 stripe_upper<-function(element)
 {
-
 return(gsub('[[:lower:]]','',element[[1]]))
 }
 
+
+###
+# This function give a string in a list back as lower letter string
+###
+
 stripe_all<-function(element)
 {
-  
-  return(tolower(element[[1]]))
+return(tolower(element[[1]]))
 }
 
 
-PUM2pos <- read.fasta('./rna-binding/positive_PUM2.fasta',as.string=F,forceDNAtolower=F)
-PUM2pos_striped <-sapply(PUM2pos,stripe_upper)
-PUM2pos_all <- sapply(PUM2pos,stripe_all)
+###
+# Load the positive sequences as vector of strings
+###
+PUM2pos <- read.fasta('./rna-binding/positive_PUM2.fasta',as.string=T,forceDNAtolower=F)
+PUM2pos_striped <-sapply(PUM2pos,stripe_upper)  # only Upper letters
+PUM2pos_all <- sapply(PUM2pos,stripe_all)       # full string aka binding site with flanks
 
+
+
+###
+# Load the negative sequences as vector of strings
+###
 PUM2neg <- read.fasta('./rna-binding/negative_PUM2.fasta', as.string=T,forceDNAtolower=F)
-PUM2neg_striped <- sapply(PUM2neg,stripe_upper)
-PUM2neg_all <- sapply(PUM2neg,stripe_all)
+PUM2neg_striped <- sapply(PUM2neg,stripe_upper) # only Upper letters
+PUM2neg_all <- sapply(PUM2neg,stripe_all)       # full string aka binding site with flanks
 
-
-#splitpercent<- 0.85
-
-#positive_training_idx <- sample(length(PUM2pos_striped),floor(length(PUM2pos_striped)*splitpercent))
-#negative_training_idx <- sample(length(PUM2neg_striped),floor(length(PUM2neg_striped)*splitpercent))
-
-#positive_training_set <- PUM2pos_striped[positive_training_idx]
-#positive_test_set     <- PUM2pos_striped[-positive_training_idx]
-
-#negative_training_set <- PUM2neg_striped[negative_training_idx]
-#negative_test_set <- PUM2neg_striped[-negative_training_idx]
-
-
-# finaly create the training and test set as two columned data.frames
-#training_set <- data.frame( lables=as.factor(c(rep(T,length(positive_training_set)),rep(F,length(negative_training_set)))))
-#training_set$seq<- DNAStringSet(c(positive_training_set,negative_training_set))
-
-#test_set <- data.frame(
-#  seq=c(positive_test_set,negative_test_set),
-#  lables=as.factor(c(rep(T,length(positive_test_set)),rep(F,length(negative_test_set)))))
-
-
+###
+# create a dataframe containing the lable and the binding site sequence. Sequence is a DNAStringSet as required for the ksvm.
+###
 dataset_wo_flanks<-  data.frame( lables=as.factor(c(rep(T,length(PUM2pos_striped)),rep(F,length(PUM2neg_striped)))))
 dataset_wo_flanks$seq<- DNAStringSet(c(PUM2pos_striped,PUM2neg_striped))
-#dataset_wo_flanks<- dataset_wo_flanks[sample(nrow(dataset_wo_flanks),nrow(dataset_wo_flanks)),]
 
 
+###
+# create a dataframe containing the lable and the binding-site-sequence with the flanks. Sequence is a DNAStringSet as required for the ksvm.
+###
 dataset_flanks<-  data.frame( lables=as.factor(c(rep(T,length(PUM2pos_striped)),rep(F,length(PUM2neg_striped)))))
 dataset_flanks$seq<- DNAStringSet(c(PUM2pos_all,PUM2neg_all))
 
@@ -65,41 +73,54 @@ dataset_flanks$seq<- DNAStringSet(c(PUM2pos_all,PUM2neg_all))
 ####################
 #     Task 2       #
 ####################
-specK <- spectrumKernel(k=3)
 
-model_init <- kbsvm(
+# We use the kebabs package
+
+specK <- spectrumKernel(k=3) # create a spectrum kernel with kmer size 3
+
+###
+# Train the SVM with a subset of datapoints kmer size 3 and default costs
+###
+
+basic_model <- kbsvm( 
   x=dataset_wo_flanks$seq[-(10000:11692)],
   y=dataset_wo_flanks$lables[-(10000:11692)],
   kernel=specK,
   pkg="e1071",
   svm="C-svc")
 
+# predict the rest of the datapoints with the trained svm
 pred<- predict(model_init,dataset_wo_flanks$seq[(10000:11692)])
 
 
 
-####################
-#     Task 3       #
-####################
-
-#stringkernel <- stringdot(type="spectrum", length=2, normalized=TRUE)
-#
-#sk_model <- ksvm(lables~.,data=training_set,kernel=stringkernel)
-#test <- predict()
+#############################################################
+#     Task 3                                                #
+# Tune your model: select the cost C and the k-mer length   #
+# that produce the best classi  fication accuracy (or AUC). #
+#############################################################
 
 
-acc<-list()
-acc_min<-3
-acc_max<-0
-auc<-list()
-auc_min<-3
-auc_max<-0
+###
+# with the ksvm it is possivle to perform a crossvalitation automaticly and to get the accuracy and the area under the curve
+# we perform a 10-fold cv and reciving the auccuracy and the auc
+###
+
+# ACC
+acc<-list() # stores the accuracy for the different k
+acc_min<-3  # just for axis limits for the plot
+acc_max<-0  # just for axis limits for the plot
+
+# AUC
+auc<-list() # stores the area under the curve for the different k
+auc_min<-3  # just for axis limits for the plot
+auc_max<-0  # just for axis limits for the plot
 
 
-ks<-c(1,2,3,4,5)
-costs<-c(0.5,0.75,1,2,4,8,10)
+ks<-c(1,2,3,4,5)  # the different kmer sizes we tried out
+costs<-c(0.5,0.75,1,2,4,8,10) # the different costs we use
 
-for (k in ks)
+for (k in ks) # for each kmer size
 {
   accC<-c()
   aucC<-c()
@@ -118,13 +139,15 @@ for (k in ks)
     cross=10,
     showProgress=T,
     cost=cost)
-    accC<-c(accC,model@cvResult@ACC)
-    aucC<-c(aucC,model@cvResult@AUC)
+    accC<-c(accC,model@cvResult@ACC)  # save the accuracy value from 10-fold cv
+    aucC<-c(aucC,model@cvResult@AUC)  # save the area under the curve value from 10-fold cv
   }
   names(accC)<-costs
   names(aucC)<-costs
   auc[[k]]<-aucC
   acc[[k]]<-accC
+  
+  # just plotting limits
   auc_min<-min(auc_min,aucC)
   auc_max<-max(auc_max,aucC)
   acc_min<-min(acc_min,accC)
