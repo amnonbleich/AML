@@ -1,4 +1,4 @@
-## Task 6
+## Task 6 AML - Ben Wulf, Amnon Bleich, Lie Hong - 2.6.17
 
 # 4.a)
 library(bnlearn)
@@ -58,8 +58,10 @@ plot( set.arc(constraint_based, from='A', to='B', check.cycles = TRUE,check.ille
 
 par(mfrow=c(1,2))
 blacklisted_arcs<- data.frame(from=c('A','B'),to=c('B','A'))
-plot(gs(learning.test, undirected=F, whitelist=c("E","F"), blacklist=blacklisted_arcs),main='Blacklisted arc A-B; whitelisted arc E->F')
-plot(gs(learning.test, undirected=F, whitelist=c("A","F"), blacklist=c("E","F")),main='whitelist A->F; blacklist E->F')
+cb2<-gs(learning.test, undirected=F, whitelist=c("E","F"), blacklist=blacklisted_arcs)
+plot(cb2,main='Blacklisted arc A-B; whitelisted arc E->F')
+cb3<-gs(learning.test, undirected=F, whitelist=c("A","F"), blacklist=c("C","D"))
+plot(cb3,main='whitelist A->F; blacklist C->D')
 
 
 
