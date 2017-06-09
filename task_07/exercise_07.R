@@ -1,4 +1,4 @@
-#AML Exercise 7 - 08.06.17 - Ben Wulf, Lie Hong, Amnon Bleich
+#AML Exercise 7 - 09.06.17 - Ben Wulf, Lie Hong, Amnon Bleich
 
 #source("https://bioconductor.org/biocLite.R")
 #biocLite("nem")
