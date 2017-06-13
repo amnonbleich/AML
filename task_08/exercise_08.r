@@ -64,3 +64,16 @@ own.EM <- function(occurances)
   browser()
   return(ph*Pr.R_r.cond.H_h)
 }
+
+
+H = names(referencestrings)
+for (i in H)
+{
+  print("borisssssssssssssssss")
+  print(i)
+  R = names(occ_sub[occ_sub[,i]==T,i])
+  for (j in R)
+  {
+    
+  }
+}
