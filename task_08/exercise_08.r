@@ -106,7 +106,7 @@ occ_sub<-occ_sub[order(rownames(occ_sub)),]
 a=our.EM(occ_sub,ph_init,Ur)
 
 
-bootres<-list()
+bootres<-c()
 
 
 for (i in 1:1000)
@@ -122,7 +122,7 @@ for (i in 1:1000)
   
   r=our.EM(bootstrap_sub,ph_i,newUr,1e-5)
 
-  bootres[i]<-list(r$ph)
+  bootres<-c(bootres,r$ph)
 }
 
 
