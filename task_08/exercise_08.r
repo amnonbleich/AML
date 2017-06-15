@@ -109,12 +109,12 @@ our.EM<-function(read_map_matrix, ph,Ur,epsilon=1e-16)
   }
   
 
-a=our.EM(occ_sub,ph_init,Ur)
+our.EM.results=our.EM(occ_sub,ph_init,Ur)
 png('./barlot.EM.png')
-barplot(a$ph,las=2,ylab='Properbility',main='Properbilitys of haplotypes for the dataset (337 reads)')
+barplot(our.EM.results$ph,las=2,ylab='Properbility',main='Probabilitys of haplotypes for the dataset (337 reads)')
 dev.off()
 png('./likelihoods.EM.png')
-plot(a$likelihoods,ylab='likelihood',xlab='iteration')
+plot(our.EM.results$likelihoods,ylab='likelihood',xlab='iteration')
 dev.off()
 
 
@@ -138,9 +138,8 @@ bootstrap_resample_dataset <-function(data,indeces)
   return(r$ph)
 }
 
-bootobj<- boot(occ_sub,bootstrap_resample_dataset,1000,parallel ="multicore",ncpus=4)
+bootobj<- boot(occ_sub,bootstrap_resample_dataset,1000,parallel ="multicore",ncpus=4,weights = (Ur/sum(Ur)))
 
-res= matrix(ncol=3,nrow=ncol(occ_sub),dimnames=list(haplotypes=colnames(occ_sub),value=c('mean','conf_intervall_low_95','conf_intervall_up_95')))
 
 res<-c()
 for (i in 1:10)
@@ -158,10 +157,14 @@ print(r)
 #############
 
 ## How reliable are results based on the bootstrapping?
-png('boxplot_boot.png')
+
+png('boxplot_boot2.png',width=800,height=600)
+par(mfrow=c(1,2))
 a=bootobj$t
 colnames(a)=colnames(occ_sub)
-boxplot(a,ylab='properbility',col=c('white','red','red','white','red','red','white','white','white','white'),las=2)
+boxplot(a,ylab='probability',col=c('white','red','red','white','red','red','white','white','white','white'),las=2,main='Results for bootstraping')
+barplot(our.EM.results$ph,las=2,ylab='Probability',main='Probabilitys of haplotypes for the original dataset (337 reads)')
+
 dev.off()
 
 
