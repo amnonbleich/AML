@@ -5,6 +5,8 @@ reads<-read.fasta(file = 'fna-files/fna-files/3.TCA.454Reads.fna',as.string=TRUE
 read_Cat<- sapply(reads,function(x){if(substr(x[1],1,10)=='acgagtgcgt'){return (1)} else if(substr(x[1],1,10)=='aggctcgaca'){return (2)}else {return (3)}})
 clone_mix_reads_raw <- reads[read_Cat==1]
 clone_mix_reads_seq <- sapply(clone_mix_reads_raw,function(x){substring(x[1],11)})
+
+## Count duplicated reads for U
 read_counts<-list()
 read_counts[unique(clone_mix_reads_seq)]=1
 for( i in clone_mix_reads_seq[duplicated(clone_mix_reads_seq)])
@@ -31,8 +33,20 @@ for (i in 1:10)
   occ[,i]<-sapply(names(U),function(read){grepl(read,referencestrings[i])})
 }
 
+
+
+# Subset the occurance matrix and the count vector of the sequences
 occ_bool<-as.logical(apply(occ,1,sum))
 occ_sub<-occ[occ_bool,]
+
+
+u_sub <- U[names(U) %in% rownames(occ_sub)]
+Ur <-u_sub[order(names(u_sub))]
+occ_sub<-occ_sub[order(rownames(occ_sub)),]
+
+
+
+
 
 ############
 # 3
@@ -58,7 +72,7 @@ our.EM<-function(read_map_matrix, ph,Ur,epsilon=1e-16)
     }
     )
   read_prob_matrix <- Pr.R_r.cond.H_h*t(read_map_matrix)
-  likelyhood <-c()
+  likelihood <-c()
   
   
   while(T)
@@ -79,10 +93,10 @@ our.EM<-function(read_map_matrix, ph,Ur,epsilon=1e-16)
     if(sum(is.nan(ph_head)))
     {browser()}
 
-    likelyhood<-c(likelyhood,sum(Ur*log(Pr.R_r)))
+    likelihood<-c(likelihood,sum(Ur*log(Pr.R_r)))
     if(all(abs(ph-ph_head)<epsilon))
     {
-      return(list(ph=ph_head,likelyhoods=likelyhood,epsilon=epsilon))
+      return(list(ph=ph_head,likelihoods=likelihood,epsilon=epsilon))
     }
     else
     {
@@ -95,21 +109,19 @@ our.EM<-function(read_map_matrix, ph,Ur,epsilon=1e-16)
   }
   
 
-
-
-
-
-u_sub <- U[names(U) %in% rownames(occ_sub)]
-Ur <-u_sub[order(names(u_sub))]
-occ_sub<-occ_sub[order(rownames(occ_sub)),]
-
-
 a=our.EM(occ_sub,ph_init,Ur)
-
+png('./barlot.EM.png')
 barplot(a$ph,las=2,ylab='Properbility',main='Properbilitys of haplotypes for the dataset (337 reads)')
+dev.off()
+png('./likelihoods.EM.png')
+plot(a$likelihoods,ylab='likelihood',xlab='iteration')
+dev.off()
 
-plot(a$likelyhoods,ylab='likelyhood',xlab='iteration',type='l')
 
+
+#####
+# Task 4
+#####
 
 bootstrap_resample_dataset <-function(data,indeces)
 { 
@@ -146,8 +158,10 @@ print(r)
 #############
 
 ## How reliable are results based on the bootstrapping?
-
-boxplot(bootobj$t,xlab='haplotypes',ylab='distribution',col=c('white','red','red','white','red','red','white','white','white','white'))
-
+png('boxplot_boot.png')
+a=bootobj$t
+colnames(a)=colnames(occ_sub)
+boxplot(a,ylab='properbility',col=c('white','red','red','white','red','red','white','white','white','white'),las=2)
+dev.off()
 
 
