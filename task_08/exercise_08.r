@@ -1,12 +1,20 @@
+#Applied Machine Learning - Exercise 8 (15.06.2017)
+#Ben Wulf, Lie Hong, Amnon Bleich
+
+
 library(seqinr)
 library(boot)
+
+## Read the read file
 reads<-read.fasta(file = 'fna-files/fna-files/3.TCA.454Reads.fna',as.string=TRUE)
 
 read_Cat<- sapply(reads,function(x){if(substr(x[1],1,10)=='acgagtgcgt'){return (1)} else if(substr(x[1],1,10)=='aggctcgaca'){return (2)}else {return (3)}})
 clone_mix_reads_raw <- reads[read_Cat==1]
 clone_mix_reads_seq <- sapply(clone_mix_reads_raw,function(x){substring(x[1],11)})
 
+
 ## Count duplicated reads for U
+## <-Begin Equals Table Comand, but runs much faster-> 
 read_counts<-list()
 read_counts[unique(clone_mix_reads_seq)]=1
 for( i in clone_mix_reads_seq[duplicated(clone_mix_reads_seq)])
@@ -15,8 +23,9 @@ for( i in clone_mix_reads_seq[duplicated(clone_mix_reads_seq)])
   
 }
 U<- sapply(read_counts,function(x){x})
+## <-End Equals Table Comand-> 
 
-
+# Read haplotypes
 references<- read.fasta('./clonal_sequences.fasta',as.string=T)
 referencestrings <-sapply(references,function(x){x[1]})
 
@@ -25,6 +34,8 @@ referencestrings <-sapply(references,function(x){x[1]})
 # 2
 #######
 
+
+## read map matrix for the haplotypes
 occ<-matrix(nrow=length(U),ncol=length(referencestrings),dimnames=(list(read=names(U),reference=names(referencestrings))))
 
 for (i in 1:10)
@@ -35,7 +46,7 @@ for (i in 1:10)
 
 
 
-# Subset the occurance matrix and the count vector of the sequences
+# Subset the occurance matrix and the count vector of the sequences which are represented in the haplotypes
 occ_bool<-as.logical(apply(occ,1,sum))
 occ_sub<-occ[occ_bool,]
 
@@ -52,6 +63,7 @@ occ_sub<-occ_sub[order(rownames(occ_sub)),]
 # 3
 ############
 
+#guess initial distribution
 
 ph_init <- apply(occ_sub,2,function(col){sum(col)/sum(occ_sub)})
 
@@ -129,18 +141,20 @@ bootstrap_resample_dataset <-function(data,indeces)
   
   count<- table(indeces)
   newUr<- as.vector(count)
-  names(newUr)<-names(data)[as.numeric(names(count))]
+  names(newUr)<-names(data)[as.numeric(names(count))] # recalculate U from samples
   
-  ph_i<- rep(1/10,10)
+  ph_i<- rep(1/10,10) # uniform equal distribution
   
   r=our.EM(bootstrap_sub,ph_i,newUr,1e-5)
 
   return(r$ph)
 }
 
-bootobj<- boot(occ_sub,bootstrap_resample_dataset,1000,parallel ="multicore",ncpus=4,weights = (Ur/sum(Ur)))
+bootobj<- boot(occ_sub,bootstrap_resample_dataset,1000,parallel ="multicore",ncpus=4,weights = (Ur/sum(Ur)))## Sequences which are more common in the data set would be choosen more often.
 
 
+
+# Build a  result matrix mean , lower border, upper border
 res<-c()
 for (i in 1:10)
 {
@@ -156,7 +170,8 @@ print(r)
 # 5
 #############
 
-## How reliable are results based on the bootstrapping?
+#plot the results
+## How reliable are results based on the bootstrapping....
 
 png('boxplot_boot2.png',width=800,height=600)
 par(mfrow=c(1,2))
